@@ -39,4 +39,8 @@ fi
 # mpv
 [ ! -d mpv ] && git clone --depth 1 --branch v$v_mpv https://github.com/mpv-player/mpv.git mpv
 
+
+# sentry-native
+[ ! -d sentry-native ] && git clone --recursive --depth 1 --branch 0.7.6 https://github.com/getsentry/sentry-native.git sentry-native
+
 cd ..

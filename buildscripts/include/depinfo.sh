@@ -30,6 +30,6 @@ dep_harfbuzz=()
 dep_libass=(freetype fribidi harfbuzz)
 dep_lua=()
 dep_libplacebo=()
-dep_mpv=(ffmpeg libass lua libplacebo)
+dep_mpv=(ffmpeg libass lua libplacebo sentry-native)
 dep_mpv_android=(mpv)
 
