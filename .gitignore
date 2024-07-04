@@ -3,6 +3,7 @@ bin
 gen
 jniLibs
 obj
+*.jar
 .gradle
 .idea
 .cxx

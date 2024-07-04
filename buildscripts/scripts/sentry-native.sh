@@ -77,6 +77,8 @@ make -j$cores VERBOSE=1 || error "Build failed"
 log "Installing"
 make install || error "Installation failed"
 
+ln -sf "$prefix_dir"/lib/libsentry.so "$native_dir"
+
 # Generate pkg-config file
 log "Generating pkg-config file"
 
