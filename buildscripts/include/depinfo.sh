@@ -17,19 +17,20 @@ v_dav1d=1.4.3
 v_ffmpeg=7.0.1
 v_mpv=0.38.0
 
+v_libxml2=2.10.3
 
 ## Dependency tree
 # I would've used a dict but putting arrays in a dict is not a thing
 
 dep_mbedtls=()
 dep_dav1d=()
-dep_ffmpeg=(mbedtls dav1d)
+dep_ffmpeg=(mbedtls dav1d libxml2)
 dep_freetype2=()
 dep_fribidi=()
 dep_harfbuzz=()
 dep_libass=(freetype fribidi harfbuzz)
 dep_lua=()
 dep_libplacebo=()
-dep_mpv=(ffmpeg libass lua libplacebo sentry-native)
+dep_mpv=(ffmpeg libass lua libplacebo )
 dep_mpv_android=(mpv)
 

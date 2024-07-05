@@ -7,6 +7,7 @@ cleanbuild=0
 nodeps=0
 target=mpv-android
 archs=(armv7l arm64 x86 x86_64)
+#archs=(armv7l)
 
 getdeps () {
 	varname="dep_${1//-/_}[*]"
@@ -171,14 +172,14 @@ if [ "$target" == "mpv-android" ]; then
 	[ -d ../libmpv/build/libs ] && ls -lh ../libmpv/build/libs/*.jar
 fi
 
-pushd ../libmpv/src/main/
-rm -f lib *.jar;ln -s jniLibs lib
-zip -r "default-arm64-v8a.jar"                lib/arm64-v8a
-zip -r "default-armeabi-v7a.jar"              lib/armeabi-v7a
-zip -r "default-x86.jar"                      lib/x86
-zip -r "default-x86_64.jar"                   lib/x86_64
-rm -f lib
-md5sum *.jar
+pushd ../libmpv/build/outputs/aar
+  unzip libmpv-release.aar -d ./;mv jni lib
+  #rm -f lib *.jar;ln -s jniLibs lib
+  zip -r "default-arm64-v8a.jar"                lib/arm64-v8a
+  zip -r "default-armeabi-v7a.jar"              lib/armeabi-v7a
+  zip -r "default-x86.jar"                      lib/x86
+  zip -r "default-x86_64.jar"                   lib/x86_64
+  md5sum *.jar
 popd
 
 exit 0

@@ -36,26 +36,13 @@ set_target_properties(
         ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${ANDROID_ABI}/libmpv.so
 )
 
-add_library(
-        avcodec
-        SHARED
-        IMPORTED
-)
-
-
-set_target_properties(
-        avcodec
-        PROPERTIES IMPORTED_LOCATION
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../../../buildscripts/prefix/${ANDROID_ABI}/lib/libavcodec.so
-)
-
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../buildscripts/prefix/${ANDROID_ABI}/include )
 
 
 
 target_link_libraries(
         media_kit_native_event_loop
-        mpv avcodec log
+        mpv log
 )
 
 
