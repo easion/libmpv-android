@@ -38,6 +38,9 @@ if [ ! -d lua ]; then
 		tar -xz -C lua --strip-components=1
 fi
 
+# lcms2
+[ ! -d lcms2 ] && git clone --recursive --depth 1 --branch lcms2.16 https://github.com/mm2/Little-CMS.git lcms2
+
 [ ! -d libplacebo ] && git clone --depth 1 --branch v$v_libplacebo --recursive https://code.videolan.org/videolan/libplacebo.git libplacebo
 
 # mpv

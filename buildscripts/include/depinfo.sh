@@ -15,6 +15,7 @@ v_mbedtls=3.5.2
 v_libplacebo=6.338.2
 v_dav1d=1.4.3
 v_ffmpeg=7.0.1
+v_lcms2=lcms2.16
 v_mpv=0.38.0
 
 v_libxml2=2.10.3
@@ -30,7 +31,7 @@ dep_fribidi=()
 dep_harfbuzz=()
 dep_libass=(freetype fribidi harfbuzz)
 dep_lua=()
-dep_libplacebo=()
+dep_libplacebo=(lcms2)
 dep_mpv=(ffmpeg libass lua libplacebo )
 dep_mpv_android=(mpv)
 

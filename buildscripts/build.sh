@@ -14,6 +14,13 @@ getdeps () {
 	echo ${!varname}
 }
 
+cleanfiles () {
+  rm -fr ../libmpv/build/
+  rm -fr ../libmpv/src/main/jniLibs/
+  rm -fr ./deps/*/_build*
+  rm -fr ./prefix/*
+}
+
 loadarch () {
 	unset CC CXX CPATH LIBRARY_PATH C_INCLUDE_PATH CPLUS_INCLUDE_PATH
   unset CFLAGS CXXFLAGS CPPFLAGS LDFLAGS
