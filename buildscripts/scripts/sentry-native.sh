@@ -18,8 +18,8 @@ fi
 $0 clean
 
 # Create build directory
-mkdir -p build
-cd build
+mkdir -p $build
+cd $build
 
 
 # 日志函数
@@ -42,8 +42,8 @@ print_env_vars() {
     log "CXX: $CXX"
     log "AR: $AR"
     log "RANLIB: $RANLIB"
-    log "android_abi: $android_abi"
-    log "android_api: $android_api"
+    log "android_abi: $ANDROID_ABI"
+    log "android_api: $ANDROID_NATIVE_API_LEVEL"
     log "prefix_dir: $prefix_dir"
     log "cores: $cores"
     log "pwd: $(pwd)"
@@ -65,8 +65,8 @@ cmake .. \
     -DSENTRY_BUILD_TESTS=OFF \
     -DSENTRY_BUILD_EXAMPLES=OFF \
     -DCMAKE_INSTALL_PREFIX="$prefix_dir" \
-    -DANDROID_ABI="$android_abi" \
-    -DANDROID_NATIVE_API_LEVEL="$android_api" \
+    -DANDROID_ABI="$ANDROID_ABI" \
+    -DANDROID_NATIVE_API_LEVEL="$ANDROID_NATIVE_API_LEVEL" \
     -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
     -DANDROID_TOOLCHAIN=clang
 
@@ -77,7 +77,7 @@ make -j$cores VERBOSE=1 || error "Build failed"
 log "Installing"
 make install || error "Installation failed"
 
-ln -sf "$prefix_dir"/lib/libsentry.so "$native_dir"
+# ln -sf "$prefix_dir"/lib/libsentry.so "$native_dir"
 
 # Generate pkg-config file
 log "Generating pkg-config file"

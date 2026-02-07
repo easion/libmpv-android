@@ -17,13 +17,36 @@ fi
 unset CC CXX # meson wants these unset
 
 meson setup $build --cross-file "$prefix_dir"/crossfile.txt \
-	--prefer-static \
+	--prefer-static --buildtype=debug \
 	--default-library shared \
-	-Diconv=disabled -Dlua=disabled \
+	-Dandroid-media-ndk=enabled \
+	-Dlua=enabled \
+	-Dlcms2=enabled  \
+	-Dvulkan=disabled  \
 	-Dlibmpv=true -Dcplayer=false  \
-	-Dmanpage-build=disabled
+	-Diconv=disabled \
+	-Dshaderc=disabled \
+	-Dmanpage-build=disabled \
+	-Dlibbluray=enabled  \
+	-Dzimg=disabled  \
+	-Dvapoursynth=disabled  \
+	-Degl-angle=disabled  \
+	-Drubberband=disabled  \
+	-Dspirv-cross=disabled  \
+	-Duchardet=disabled  \
+	-Ddvdnav=enabled  \
+	-Dopenal=disabled  \
 
-ninja -C $build -j$cores
+#	-Dc_args=-Wno-error=int-conversion
+
+ninja -C $build -j$cores -v
+
+if [ -f $build/libmpv.a ]; then
+	echo >&2 "Meson fucked up, forcing rebuild."
+	$0 clean
+	exec $0 build
+fi
 DESTDIR="$prefix_dir" ninja -C $build install
+echo DESTDIR="$prefix_dir" ninja -C $build install
 
-ln -sf "$prefix_dir"/lib/libmpv.so "$native_dir"
+# ln -sf "$prefix_dir"/lib/libdvnav.so "$native_dir"

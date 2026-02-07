@@ -4,20 +4,20 @@
 
 . ./include/path.sh # load $os var
 
-[ -z "$TRAVIS" ] && TRAVIS=0 # skip steps not required for CI?
+[ -z "$IN_CI" ] && IN_CI=0 # skip steps not required for CI?
 [ -z "$WGET" ] && WGET=wget # possibility of calling wget differently
 
 if [ "$os" == "linux" ]; then
-	if [ $TRAVIS -eq 0 ]; then
-		hash yum &>/dev/null && {
+	if [ $IN_CI -eq 0 ]; then
+		if hash yum &>/dev/null; then
 			sudo yum install autoconf pkgconfig libtool ninja-build \
-			python3-pip python3-setuptools unzip wget;
-			python3 -m pip install meson jsonschema jinja2; }
-		apt-get -v &>/dev/null && {
-		    sudo apt-get update;
-			sudo apt-get install -y autoconf pkg-config libtool ninja-build nasm \
-			python3-pip python3-setuptools unzip;
-			python3 -m pip install meson jsonschema jinja2; }
+				unzip wget meson
+		elif apt-get -v &>/dev/null; then
+			sudo apt-get install autoconf pkg-config libtool ninja-build \
+				unzip wget meson
+		else
+			echo "Note: dependencies were not installed, you have to do that manually."
+		fi
 	fi
 
 	if ! javac -version &>/dev/null; then
@@ -31,7 +31,7 @@ if [ "$os" == "linux" ]; then
 
 	os_ndk="linux"
 elif [ "$os" == "mac" ]; then
-	if [ $TRAVIS -eq 0 ]; then
+	if [ $IN_CI -eq 0 ]; then
 		if ! hash brew 2>/dev/null; then
 			echo "Error: brew not found. You need to install Homebrew: https://brew.sh/"
 			exit 255
@@ -50,6 +50,7 @@ mkdir -p sdk && cd sdk
 
 # Android SDK
 if [ ! -d "android-sdk-${os}" ]; then
+	echo "Android SDK not found. Downloading commandline tools."
 	$WGET "https://dl.google.com/android/repository/commandlinetools-${os}-${v_sdk}.zip"
 	mkdir "android-sdk-${os}"
 	unzip -q -d "android-sdk-${os}" "commandlinetools-${os}-${v_sdk}.zip"
@@ -61,10 +62,29 @@ sdkmanager () {
 	"$exe" --sdk_root="${ANDROID_HOME}" "$@"
 }
 echo y | sdkmanager \
-	"platforms;android-34" \
-	"build-tools;${v_sdk_build_tools}" \
-	"ndk;${v_ndk}" \
-	"cmake;3.22.1"
+	"platforms;android-${v_sdk_platform}" "build-tools;${v_sdk_build_tools}" \
+	"extras;android;m2repository"
+
+# Android NDK (either standalone or installed by SDK)
+if [ -d "android-ndk-${v_ndk}" ]; then
+	echo "Android NDK directory found."
+elif [ -d "android-sdk-$os/ndk/${v_ndk_n}" ]; then
+	echo "Creating NDK symlink to SDK."
+	ln -s "android-sdk-$os/ndk/${v_ndk_n}" "android-ndk-${v_ndk}"
+elif [ -z "${os_ndk}" ]; then
+	echo "Downloading NDK with sdkmanager."
+	echo y | sdkmanager "ndk;${v_ndk_n}"
+	ln -s "android-sdk-$os/ndk/${v_ndk_n}" "android-ndk-${v_ndk}"
+else
+	echo "Downloading NDK."
+	$WGET "http://dl.google.com/android/repository/android-ndk-${v_ndk}-${os_ndk}.zip"
+	unzip -q "android-ndk-${v_ndk}-${os_ndk}.zip"
+	rm "android-ndk-${v_ndk}-${os_ndk}.zip"
+fi
+if ! grep -qF "${v_ndk_n}" "android-ndk-${v_ndk}/source.properties"; then
+	echo "Error: NDK exists but is not the correct version (expecting ${v_ndk_n})"
+	exit 255
+fi
 
 # gas-preprocessor
 mkdir -p bin

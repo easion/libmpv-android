@@ -22,7 +22,7 @@ target_link_libraries(
         ${android-lib}
 )
 
-add_library(media_kit_native_event_loop SHARED media_kit_native_event_loop.cpp)
+#add_library(media_kit_native_event_loop SHARED media_kit_native_event_loop.cpp)
 
 add_library(
         mpv
@@ -40,9 +40,9 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../buildscripts/prefix
 
 
 
-target_link_libraries(
-        media_kit_native_event_loop
-        mpv log
-)
+#target_link_libraries(
+#        media_kit_native_event_loop
+#        mpv log
+#)
 
 

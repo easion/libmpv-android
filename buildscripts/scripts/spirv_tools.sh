@@ -2,11 +2,6 @@
 
 . ../../include/depinfo.sh
 . ../../include/path.sh
-
-#make -j$cores no_test
-#make DESTDIR="$prefix_dir" install
-
-
 build=_build$ndk_suffix
 
 if [ "$1" == "build" ]; then
@@ -29,7 +24,7 @@ cd $build
 
 # 日志函数
 log() {
-    echo "[mbedtls] $1"
+    echo "[spirv_tools] $1"
 }
 
 # 错误处理函数
@@ -66,13 +61,12 @@ cmake .. \
     -DCMAKE_RANLIB="$(type -p $RANLIB)" \
     -DCMAKE_LINKER="$(type -p $LD)" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DSENTRY_BUILD_SHARED_LIBS=ON \
+    -DSENTRY_BUILD_SHARED_LIBS=OFF \
     -DCMAKE_INSTALL_PREFIX="$prefix_dir" \
     -DANDROID_ABI="$ANDROID_ABI" \
     -DANDROID_NATIVE_API_LEVEL="$ANDROID_NATIVE_API_LEVEL" \
     -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
-    -DANDROID_TOOLCHAIN=clang \
-    -DENABLE_PROGRAMS=OFF
+    -DANDROID_TOOLCHAIN=clang
 
 
 log "Building"
@@ -81,21 +75,20 @@ make -j$cores VERBOSE=1 || error "Build failed"
 log "Installing"
 make install || error "Installation failed"
 
-#ln -sf "$prefix_dir"/lib/libmbedtls.so "$native_dir"
 
 # Generate pkg-config file
 log "Generating pkg-config file"
 
 mkdir -p $prefix_dir/lib/pkgconfig
-cat > $prefix_dir/lib/pkgconfig/mbedtls.pc << EOF
+cat > $prefix_dir/lib/pkgconfig/spirv_tools.pc << EOF
 prefix=${prefix_dir}
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
-Name: mbedtls
-Description: Libmbedtls
+Name: spirv_tools
+Description: Google spirv_tools
 Version: ${SENTRY_VERSION}
-Libs: -L\${libdir} -lmbedtls
+Libs: -L\${libdir} -lspirv_tools
 Cflags: -I\${includedir}
 EOF

@@ -1,5 +1,4 @@
 #!/bin/bash -e
-
 . ../../include/depinfo.sh
 . ../../include/path.sh
 
@@ -16,7 +15,12 @@ fi
 
 unset CC CXX # meson wants these unset
 
-meson setup $build --cross-file "$prefix_dir"/crossfile.txt -Dharfbuzz=disabled
+meson setup $build --cross-file "$prefix_dir"/crossfile.txt \
+	--prefer-static --buildtype=debug \
+	--default-library static 
+	
 
-ninja -C $build -j$cores
+ninja -C $build -j$cores -v
 DESTDIR="$prefix_dir" ninja -C $build install
+
+# ln -sf "$prefix_dir"/lib/libdvnav.so "$native_dir"

@@ -25,3 +25,4 @@ nativeprefix () {
 }
 
 ./gradlew assembleRelease
+#./gradlew assembleDebug

@@ -2,11 +2,6 @@
 
 . ../../include/depinfo.sh
 . ../../include/path.sh
-
-#make -j$cores no_test
-#make DESTDIR="$prefix_dir" install
-
-
 build=_build$ndk_suffix
 
 if [ "$1" == "build" ]; then
@@ -29,7 +24,7 @@ cd $build
 
 # 日志函数
 log() {
-    echo "[mbedtls] $1"
+    echo "[mpvshaderc] $1"
 }
 
 # 错误处理函数
@@ -59,6 +54,23 @@ print_env_vars() {
 
 print_env_vars
 
+
+echo "cmake .. \
+    -DCMAKE_C_COMPILER="$CC" \
+    -DCMAKE_CXX_COMPILER="$CXX" \
+    -DCMAKE_AR="$(type -p $AR)" \
+    -DCMAKE_RANLIB="$(type -p $RANLIB)" \
+    -DCMAKE_LINKER="$(type -p $LD)" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DSENTRY_BUILD_SHARED_LIBS=OFF \
+    -DCMAKE_INSTALL_PREFIX="$prefix_dir" \
+    -DANDROID_ABI="$ANDROID_ABI" \
+    -DANDROID_NATIVE_API_LEVEL="$ANDROID_NATIVE_API_LEVEL" \
+    -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
+    -DANDROID_TOOLCHAIN=clang \
+    -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON"
+
+
 cmake .. \
     -DCMAKE_C_COMPILER="$CC" \
     -DCMAKE_CXX_COMPILER="$CXX" \
@@ -66,13 +78,13 @@ cmake .. \
     -DCMAKE_RANLIB="$(type -p $RANLIB)" \
     -DCMAKE_LINKER="$(type -p $LD)" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DSENTRY_BUILD_SHARED_LIBS=ON \
+    -DSENTRY_BUILD_SHARED_LIBS=OFF \
     -DCMAKE_INSTALL_PREFIX="$prefix_dir" \
     -DANDROID_ABI="$ANDROID_ABI" \
     -DANDROID_NATIVE_API_LEVEL="$ANDROID_NATIVE_API_LEVEL" \
     -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
     -DANDROID_TOOLCHAIN=clang \
-    -DENABLE_PROGRAMS=OFF
+    -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON
 
 
 log "Building"
@@ -81,21 +93,22 @@ make -j$cores VERBOSE=1 || error "Build failed"
 log "Installing"
 make install || error "Installation failed"
 
-#ln -sf "$prefix_dir"/lib/libmbedtls.so "$native_dir"
+# ln -sf "$prefix_dir"/lib/libshaderc_shared.so "$native_dir"
+# ln -sf "$prefix_dir"/lib/libSPIRV-Tools-shared.so "$native_dir"
 
 # Generate pkg-config file
 log "Generating pkg-config file"
 
 mkdir -p $prefix_dir/lib/pkgconfig
-cat > $prefix_dir/lib/pkgconfig/mbedtls.pc << EOF
+cat > $prefix_dir/lib/pkgconfig/mpvshaderc.pc << EOF
 prefix=${prefix_dir}
 exec_prefix=\${prefix}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
-Name: mbedtls
-Description: Libmbedtls
+Name: mpvshaderc
+Description: Google mpvshaderc
 Version: ${SENTRY_VERSION}
-Libs: -L\${libdir} -lmbedtls
+Libs: -L\${libdir} -lmpvshaderc
 Cflags: -I\${includedir}
 EOF

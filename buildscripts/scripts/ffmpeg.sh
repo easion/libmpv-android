@@ -25,7 +25,9 @@ cpuflags=
 
 #EXTRA_FLAGS = --disable-gpl
 
-../configure \
+#	--disable-postproc \
+
+../configure --enable-gpl --enable-nonfree \
 	--target-os=android --enable-cross-compile --cross-prefix=$ndk_triple- --ranlib=$RANLIB --ar=$AR --cc=$CC \
 	--arch=${ndk_triple%%-*} --cpu=$cpu --pkg-config=pkg-config --nm=llvm-nm \
 	--extra-cflags="-I$prefix_dir/include $cpuflags" --extra-ldflags="-L$prefix_dir/lib" \
@@ -52,7 +54,6 @@ cpuflags=
 	--disable-filters \
 	--disable-doc \
 	--disable-avdevice \
-	--disable-postproc \
 	--disable-programs \
 	--disable-gray \
 	--disable-swscale-alpha \
@@ -82,6 +83,9 @@ cpuflags=
 	--enable-avformat \
 	--enable-swscale \
 	--enable-swresample \
+	--enable-decoder=png \
+	--enable-encoder=png \
+	--enable-parser=png \
 	\
 	--enable-decoder=flv \
 	--enable-decoder=h263 \
@@ -104,6 +108,7 @@ cpuflags=
 	--enable-decoder=aac* \
 	--enable-decoder=ac3 \
 	--enable-decoder=alac \
+	--enable-decoder=truehd \
 	--enable-decoder=als \
 	--enable-decoder=ape \
 	--enable-decoder=atrac* \
@@ -126,6 +131,7 @@ cpuflags=
 	--enable-decoder=pcm* \
 	--enable-decoder=dsd* \
 	--enable-decoder=dca \
+	--enable-decoder=mlp \
 	--enable-decoder=ssa \
 	--enable-decoder=ass \
 	--enable-decoder=dvbsub \
@@ -141,6 +147,8 @@ cpuflags=
 	--enable-decoder=movtext \
 	\
 	--enable-demuxer=concat \
+	--enable-demuxer=rawvideo \
+	--enable-demuxer=h264 \
 	--enable-demuxer=data \
 	--enable-demuxer=flv \
 	--enable-demuxer=hls \
@@ -202,6 +210,7 @@ cpuflags=
 	--enable-parser=mpegvideo \
 	--enable-parser=aac* \
 	--enable-parser=ac3 \
+	--enable-parser=turehd \
 	--enable-parser=cook \
 	--enable-parser=dca \
 	--enable-parser=flac \
@@ -219,6 +228,7 @@ cpuflags=
 	--enable-protocol=data \
 	--enable-protocol=ffrtmphttp \
 	--enable-protocol=file \
+	--enable-protocol=fd \
 	--enable-protocol=ftp \
 	--enable-protocol=hls \
 	--enable-protocol=http \
@@ -235,15 +245,12 @@ cpuflags=
 	--enable-protocol=tls \
 	--enable-protocol=srt \
 	--enable-network \
+        --enable-encoder=alac \
+        --enable-encoder=pcm_s16le \
+        --enable-encoder=pcm_s24le \
+        --enable-encoder=pcm_f32le \
+        --enable-encoder=aac
 
 make -j$cores
 make DESTDIR="$prefix_dir" install
 
-ln -sf "$prefix_dir"/lib/libswresample.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libpostproc.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libavutil.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libavcodec.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libavformat.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libswscale.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libavfilter.so "$native_dir"
-ln -sf "$prefix_dir"/lib/libavdevice.so "$native_dir"

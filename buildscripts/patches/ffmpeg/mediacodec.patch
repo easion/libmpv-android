@@ -1,0 +1,69 @@
+diff --git a/libavcodec/mediacodec_surface.c b/libavcodec/mediacodec_surface.c
+index ef41cda..bc45f8e 100644
+--- a/libavcodec/mediacodec_surface.c
++++ b/libavcodec/mediacodec_surface.c
+@@ -49,7 +49,7 @@ FFANativeWindow *ff_mediacodec_surface_ref(void *surface, void *native_window, v
+     }
+ 
+     if (!ret->surface && !ret->native_window) {
+-        av_log(log_ctx, AV_LOG_ERROR, "Both surface and native_window are NULL\n");
++        av_log(log_ctx, AV_LOG_ERROR, "Both surface and native_window are NULL(%p,%p)\n", surface, native_window);
+         av_freep(&ret);
+     }
+ 
+diff --git a/libavcodec/mediacodecdec.c b/libavcodec/mediacodecdec.c
+index b858728..8c6d554 100644
+--- a/libavcodec/mediacodecdec.c
++++ b/libavcodec/mediacodecdec.c
+@@ -395,6 +395,21 @@ static av_cold int mediacodec_decode_init(AVCodecContext *avctx)
+     ff_AMediaFormat_setInt32(format, "width", avctx->width);
+     ff_AMediaFormat_setInt32(format, "height", avctx->height);
+ 
++#if 0
++/*
++*/
++	const int COLOR_RANGE_FULL = 1;
++    const int COLOR_RANGE_LIMITED = 2;
++
++    const int COLOR_STANDARD_BT2020 = 6;
++    const int COLOR_STANDARD_BT601_NTSC = 4;
++    const int COLOR_STANDARD_BT601_PAL = 2;
++    const int COLOR_STANDARD_BT709 = 1;
++
++	ff_AMediaFormat_setInt32(format, "color-standard", COLOR_STANDARD_BT709); // BT.709
++	ff_AMediaFormat_setInt32(format, "color-range", COLOR_RANGE_FULL);    // Full range
++#endif
++
+     s->ctx = av_mallocz(sizeof(*s->ctx));
+     if (!s->ctx) {
+         av_log(avctx, AV_LOG_ERROR, "Failed to allocate MediaCodecDecContext\n");
+diff --git a/libavcodec/mediacodecdec_common.c b/libavcodec/mediacodecdec_common.c
+index d6f91e6..c1737e2 100644
+--- a/libavcodec/mediacodecdec_common.c
++++ b/libavcodec/mediacodecdec_common.c
+@@ -508,21 +508,22 @@ int ff_mediacodec_dec_init(AVCodecContext *avctx, MediaCodecDecContext *s,
+     pix_fmt = ff_get_format(avctx, pix_fmts);
+     if (pix_fmt == AV_PIX_FMT_MEDIACODEC) {
+         AVMediaCodecContext *user_ctx = avctx->hwaccel_context;
++		AVHWDeviceContext *device_ctx = NULL;
+ 
+         if (avctx->hw_device_ctx) {
+-            AVHWDeviceContext *device_ctx = (AVHWDeviceContext*)(avctx->hw_device_ctx->data);
++            device_ctx = (AVHWDeviceContext*)(avctx->hw_device_ctx->data);
+             if (device_ctx->type == AV_HWDEVICE_TYPE_MEDIACODEC) {
+                 if (device_ctx->hwctx) {
+                     AVMediaCodecDeviceContext *mediacodec_ctx = (AVMediaCodecDeviceContext *)device_ctx->hwctx;
+                     s->surface = ff_mediacodec_surface_ref(mediacodec_ctx->surface, mediacodec_ctx->native_window, avctx);
+-                    av_log(avctx, AV_LOG_INFO, "Using surface %p\n", s->surface);
++                    av_log(avctx, AV_LOG_INFO, "Using mediacodec %p surface %p\n", mediacodec_ctx, s->surface);
+                 }
+             }
+         }
+ 
+         if (!s->surface && user_ctx && user_ctx->surface) {
+             s->surface = ff_mediacodec_surface_ref(user_ctx->surface, NULL, avctx);
+-            av_log(avctx, AV_LOG_INFO, "Using surface %p\n", s->surface);
++            av_log(avctx, AV_LOG_INFO, "Using device_ctx %p user_ctx %p surface %p\n", device_ctx, user_ctx, s->surface);
+         }
+     }
+ 

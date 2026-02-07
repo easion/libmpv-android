@@ -1,10 +1,12 @@
 #!/bin/bash -e
 
+clear
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 . ./include/depinfo.sh
 
 cleanbuild=0
 nodeps=0
+clang=1
 target=mpv-android
 archs=(armv7l arm64 x86 x86_64)
 #archs=(armv7l)
@@ -32,6 +34,7 @@ loadarch () {
 		export ndk_suffix=
 		export ndk_triple=arm-linux-androideabi
 		cc_triple=armv7a-linux-androideabi$apilvl
+		#prefix_name=armv7l
 		prefix_name=armeabi-v7a
 	elif [ "$1" == "arm64" ]; then
 		export ndk_suffix=-arm64
@@ -54,10 +57,18 @@ loadarch () {
 	fi
 	export prefix_dir="$PWD/prefix/$prefix_name"
 	export native_dir="$PWD/../libmpv/src/main/jniLibs/$prefix_name"
+	export ANDROID_ABI=$prefix_name
+	export ANDROID_NATIVE_API_LEVEL=$apilvl
+	
 	export CC=$cc_triple-clang
+	
 	export CXX=$cc_triple-clang++
+	export LDFLAGS="-Wl,-O1,--icf=safe -Wl,-z,max-page-size=16384"
 	export AR=llvm-ar
 	export RANLIB=llvm-ranlib
+	echo prefix_dir="$PWD/prefix/$prefix_name"
+	echo native_dir="$PWD/../libmpv/src/main/jniLibs/$prefix_name"
+	echo ANDROID_ABI=$prefix_name
 }
 
 setup_prefix () {
@@ -75,6 +86,10 @@ setup_prefix () {
 	local cpu_family=${ndk_triple%%-*}
 	[ "$cpu_family" == "i686" ] && cpu_family=x86
 
+	if ! command -v pkg-config >/dev/null; then
+		echo "pkg-config not provided!"
+		return 1
+	fi
 	# meson wants to be spoonfed this file, so create it ahead of time
 	# also define: release build, static libs and no source downloads at runtime(!!!)
 	cat >"$prefix_dir/crossfile.txt" <<CROSSFILE
@@ -174,19 +189,21 @@ else
 fi
 
 if [ "$target" == "mpv-android" ]; then
+  echo "--> assemble mpv librarys"
+  rm -fr ../libmpv/build/outputs/aar/*
   assemble
 	[ -d ../libmpv/build/outputs/aar ] && ls -lh ../libmpv/build/outputs/aar/*.aar
 	[ -d ../libmpv/build/libs ] && ls -lh ../libmpv/build/libs/*.jar
-fi
 
-pushd ../libmpv/build/outputs/aar
-  unzip libmpv-release.aar -d ./;mv jni lib
-  #rm -f lib *.jar;ln -s jniLibs lib
-  zip -r "default-arm64-v8a.jar"                lib/arm64-v8a
-  zip -r "default-armeabi-v7a.jar"              lib/armeabi-v7a
-  zip -r "default-x86.jar"                      lib/x86
-  zip -r "default-x86_64.jar"                   lib/x86_64
-  md5sum *.jar
-popd
+	pushd ../libmpv/build/outputs/aar
+	  unzip libmpv-release.aar -d ./;mv jni lib
+	  #rm -f lib *.jar;ln -s jniLibs lib
+	  zip -r "default-arm64-v8a.jar"                lib/arm64-v8a
+	  zip -r "default-armeabi-v7a.jar"              lib/armeabi-v7a
+	  zip -r "default-x86.jar"                      lib/x86
+	  zip -r "default-x86_64.jar"                   lib/x86_64
+	  md5sum *.jar
+	popd
+fi
 
 exit 0

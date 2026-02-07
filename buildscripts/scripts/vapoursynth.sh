@@ -2,11 +2,6 @@
 
 . ../../include/depinfo.sh
 . ../../include/path.sh
-
-#make -j$cores no_test
-#make DESTDIR="$prefix_dir" install
-
-
 build=_build$ndk_suffix
 
 if [ "$1" == "build" ]; then
@@ -24,12 +19,11 @@ $0 clean
 
 # Create build directory
 mkdir -p $build
-cd $build
 
 
 # 日志函数
 log() {
-    echo "[mbedtls] $1"
+    echo "[vapoursynth] $1"
 }
 
 # 错误处理函数
@@ -54,25 +48,40 @@ print_env_vars() {
     log "pwd: $(pwd)"
 }
 
+export PKG_CONFIG_PATH="$prefix_dir/usr/lib/pkgconfig"
+export PKG_CONFIG_LIBDIR="$prefix_dir/usr/lib/pkgconfig"
 
 # Configure with CMake
 
 print_env_vars
 
-cmake .. \
-    -DCMAKE_C_COMPILER="$CC" \
-    -DCMAKE_CXX_COMPILER="$CXX" \
-    -DCMAKE_AR="$(type -p $AR)" \
-    -DCMAKE_RANLIB="$(type -p $RANLIB)" \
-    -DCMAKE_LINKER="$(type -p $LD)" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DSENTRY_BUILD_SHARED_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX="$prefix_dir" \
-    -DANDROID_ABI="$ANDROID_ABI" \
-    -DANDROID_NATIVE_API_LEVEL="$ANDROID_NATIVE_API_LEVEL" \
-    -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK/build/cmake/android.toolchain.cmake" \
-    -DANDROID_TOOLCHAIN=clang \
-    -DENABLE_PROGRAMS=OFF
+./autogen.sh
+./configure --help
+cd $build
+
+
+../configure \
+    CC="$CC" \
+    CXX="$CXX" \
+    AR="$AR" \
+    RANLIB="$RANLIB" \
+    LD="$LD" \
+    CFLAGS="-O2" \
+    CXXFLAGS="-O2" \
+    ZIMG_CFLAGS="-I$prefix_dir/usr/include/" \
+    ZIMG_LIBS="-L$prefix_dir/usr/lib/ -lzimg" \
+    KG_CONFIG_PATH="$prefix_dir/usr/lib/pkgconfig" \
+    PKG_CONFIG_LIBDIR="$prefix_dir/usr/lib/pkgconfig" \
+    --prefix="$prefix_dir" \
+    --host="$ndk_triple" \
+    --with-sysroot="$ANDROID_NDK/sysroot" \
+    --disable-shared \
+    --disable-tests \
+    --enable-vsscript=no \
+    --enable-vspipe=no \
+    --enable-python-module=no \
+    --disable-examples
+
 
 
 log "Building"
@@ -81,21 +90,19 @@ make -j$cores VERBOSE=1 || error "Build failed"
 log "Installing"
 make install || error "Installation failed"
 
-#ln -sf "$prefix_dir"/lib/libmbedtls.so "$native_dir"
-
 # Generate pkg-config file
 log "Generating pkg-config file"
 
 mkdir -p $prefix_dir/lib/pkgconfig
-cat > $prefix_dir/lib/pkgconfig/mbedtls.pc << EOF
-prefix=${prefix_dir}
-exec_prefix=\${prefix}
+cat > $prefix_dir/lib/pkgconfig/vapoursynth.pc << EOF
+prefix=/usr
+exec_prefix=${prefix_dir}
 libdir=\${exec_prefix}/lib
 includedir=\${prefix}/include
 
-Name: mbedtls
-Description: Libmbedtls
-Version: ${SENTRY_VERSION}
-Libs: -L\${libdir} -lmbedtls
+Name: vapoursynth
+Description: Google vapoursynth
+Version: 69
+Libs: -L\${libdir} -lvapoursynth
 Cflags: -I\${includedir}
 EOF

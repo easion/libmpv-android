@@ -6,16 +6,18 @@ plugins {
 
 android {
     namespace = "dev.jdtech.mpv"
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
-    ndkVersion = "26.3.11579264"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
+    ndkVersion = "28.1.13356709"
 
     defaultConfig {
         minSdk = 26
         consumerProguardFiles("proguard-rules.pro")
         externalNativeBuild {
             cmake {
-                arguments += "-DANDROID_STL=c++_shared"
+                arguments += listOf(
+                    "-DANDROID_STL=c++_shared",
+                )
                 cFlags += "-Werror"
                 cppFlags += "-std=c++11"
             }
@@ -25,7 +27,7 @@ android {
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+            //version = "4.0.2"
         }
     }
 
@@ -45,7 +47,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "dev.jdtech.mpv"
             artifactId = "libmpv"
-            version = "0.3.0"
+            version = "0.4.1"
 
             afterEvaluate {
                 from(components["release"])
